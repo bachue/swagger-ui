@@ -738,7 +738,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
   },
 
   getTextAreaValue: function(textArea) {
-    var param, parsed, result, i;
+    var param, parsed, result, i, pairs, key, value;
     if (textArea.value === null || jQuery.trim(textArea.value).length === 0) {
       return null;
     }
@@ -752,6 +752,17 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
         }
       }
       return result.length > 0 ? result : null;
+    } else if (param && param.type && param.type.toLowerCase() === 'object' && param.allowMultiple) {
+      parsed = textArea.value.split('\n');
+      result = {};
+      for (i = 0; i < parsed.length; i++) {
+        pairs = parsed[i].split('=');
+        key = pairs[0], value = pairs[1];
+        if (key !== null && jQuery.trim(key).length > 0 && value !== null && jQuery.trim(value).length > 0) {
+          result[key] = value;
+        }
+      }
+      return jQuery.isEmptyObject(result) ? null : result;
     } else {
       return textArea.value;
     }
