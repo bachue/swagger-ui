@@ -4465,7 +4465,7 @@ Operation.prototype.getMissingParams = function (args) {
   return missingParams;
 };
 
-Operation.prototype.getBody = function (headers, args, opts) {
+Operation.prototype.getBody = function (headers, args, opts, asJSON) {
   var formParams = {}, hasFormParams, body, key, value, hasBody = false;
 
   // look at each param and put form params in an object
@@ -4501,6 +4501,9 @@ Operation.prototype.getBody = function (headers, args, opts) {
 
   // handle form params
   if (hasFormParams && !isMultiPart) {
+    if(asJSON) {
+      body = formParams;
+    } else {
     var encoded = '';
 
     for (key in formParams) {
@@ -4516,6 +4519,7 @@ Operation.prototype.getBody = function (headers, args, opts) {
     }
 
     body = encoded;
+    }
   } else if (isMultiPart) {
     if (opts.useJQuery) {
       var bodyParam = new FormData();
@@ -4663,7 +4667,7 @@ Operation.prototype.execute = function (arg1, arg2, arg3, arg4, parent) {
   for (attrname in allHeaders) { headers[attrname] = allHeaders[attrname]; }
   for (attrname in contentTypeHeaders) { headers[attrname] = contentTypeHeaders[attrname]; }
 
-  var body = this.getBody(contentTypeHeaders, args, opts);
+  var body = this.getBody(contentTypeHeaders, args, opts, arg2.asJSON);
   var url = this.urlify(args);
 
   if(url.indexOf('.{format}') > 0) {
@@ -25934,7 +25938,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
 
 
     // adds curl output
-    var curlCommand = this.model.asCurl(this.map, {responseContentType: contentType});
+    var curlCommand = this.model.asCurl(this.map, {responseContentType: contentType, requestContentType: 'application/json', asJSON: true});
     curlCommand = curlCommand.replace('!', '&#33;');
     $( 'div.curl', $(this.el)).html('<pre>' + curlCommand + '</pre>');
 
